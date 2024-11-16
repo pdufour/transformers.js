@@ -14,24 +14,24 @@ const TARGET_OUTPUT = "erdingsAndroid Load";
 const wrap_async_iife = (code) => `(async function() { ${code} })();`;
 
 const check = (code, module = false) => {
-  const args = ["-e", code];
-  if (module) args.push("--input-type=module");
-  const { status, stdout, stderr } = spawnSync("node", args);
-  expect(stderr.toString()).toBe(""); // No warnings or errors are printed
-  expect(stdout.toString()).toBe(TARGET_OUTPUT); // The output should match
-  expect(status).toBe(0); // The process should exit cleanly
+    const args = ["-e", code];
+    if (module) args.push("--input-type=module");
+    const { status, stdout, stderr } = spawnSync("node", args);
+    expect(stderr.toString()).toBe(""); // No warnings or errors are printed
+    expect(stdout.toString()).toBe(TARGET_OUTPUT); // The output should match
+    expect(status).toBe(0); // The process should exit cleanly
 };
 
 describe("Testing the bundle", () => {
-  it("ECMAScript Module (ESM)", () => {
-    check(`import { pipeline } from "${MODULE_NAME}";${CODE_BODY}`, true);
-  });
+    it("ECMAScript Module (ESM)", () => {
+        check(`import { pipeline } from "${MODULE_NAME}";${CODE_BODY}`, true);
+    });
 
-  it("CommonJS (CJS) with require", () => {
-    check(`const { pipeline } = require("${MODULE_NAME}");${wrap_async_iife(CODE_BODY)}`);
-  });
+    it("CommonJS (CJS) with require", () => {
+        check(`const { pipeline } = require("${MODULE_NAME}");${wrap_async_iife(CODE_BODY)}`);
+    });
 
-  it("CommonJS (CJS) with dynamic import", () => {
-    check(`${wrap_async_iife(`const { pipeline } = await import("${MODULE_NAME}");${CODE_BODY}`)}`);
-  });
+    it("CommonJS (CJS) with dynamic import", () => {
+        check(`${wrap_async_iife(`const { pipeline } = await import("${MODULE_NAME}");${CODE_BODY}`)}`);
+    });
 });

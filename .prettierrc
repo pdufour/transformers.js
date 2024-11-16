@@ -1,9 +1,11 @@
 {
+    "tabWidth": 4,
+    "printWidth": 120,
     "overrides": [
         {
             "files": ["tests/**/*.js"],
             "options": {
-              "printWidth": 10000000
+                "printWidth": 10000000
             }
         }
     ]

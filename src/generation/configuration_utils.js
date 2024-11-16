@@ -1,4 +1,3 @@
-
 /**
  * @module generation/configuration_utils
  */
@@ -371,11 +370,10 @@ export class GenerationConfig {
     generation_kwargs = {};
 
     /**
-     * 
-     * @param {GenerationConfig|import('../configs.js').PretrainedConfig} config 
+     *
+     * @param {GenerationConfig|import('../configs.js').PretrainedConfig} config
      */
     constructor(config) {
         Object.assign(this, pick(config, Object.getOwnPropertyNames(this)));
     }
 }
-
