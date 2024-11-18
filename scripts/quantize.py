@@ -207,7 +207,6 @@ def quantize_q4(
     block_size: int,
     is_symmetric: bool,
     accuracy_level: int,
-    op_block_list: List[str] = [],
 ):
     """
     Quantize the weights of the model from float32 to 4-bit int
@@ -289,6 +288,7 @@ def quantize(input_folder, output_folder, quantization_args: QuantizationArgumen
                 quantize_fp16(
                     model,
                     save_path,
+                    quantization_args.op_block_list
                 )
 
             elif mode in (QuantMode.Q4, QuantMode.Q4F16):
@@ -300,12 +300,12 @@ def quantize(input_folder, output_folder, quantization_args: QuantizationArgumen
                     block_size=block_size,
                     is_symmetric=quantization_args.is_symmetric,
                     accuracy_level=quantization_args.accuracy_level,
-                    op_block_list=quantization_args.op_block_list,
                 )
                 if mode == QuantMode.Q4F16:
                     quantize_fp16(
                         q4_model,
                         save_path,
+                        quantization_args.op_block_list,
                     )
 
             elif mode == QuantMode.BNB4:
@@ -318,7 +318,6 @@ def quantize(input_folder, output_folder, quantization_args: QuantizationArgumen
                         if quantization_args.quant_type is not None
                         else MatMulBnb4Quantizer.NF4
                     ),
-                    op_block_list=quantization_args.op_block_list,
                 )
 
             elif mode in (QuantMode.Q8, QuantMode.QI8, QuantMode.QU8):
