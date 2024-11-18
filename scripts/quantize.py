@@ -1,7 +1,7 @@
 from enum import Enum
 
 from tqdm import tqdm
-from typing import Set
+from typing import Set, List
 import onnx
 import os
 
@@ -64,6 +64,16 @@ class QuantizationArguments:
         metadata={
             "help": "Quantization mode to use.",
             "choices": QUANTIZE_OPTIONS,
+            "nargs": "+",
+        },
+    )
+
+    op_block_list: List[str] = field(
+        default_factory=list,
+        metadata={
+            "help": """List of operators to exclude from quantization.
+                   Can be any standard ONNX operator (see https://onnx.ai/onnx/operators/)
+                   or your custom implemented operators.""",
             "nargs": "+",
         },
     )
@@ -131,6 +141,7 @@ def quantize_q8(
     per_channel: bool,
     reduce_range: bool,
     weight_type: QuantType,
+    op_block_list: List[str] = [],
 ):
     """
     Quantize the weights of the model from float32 to int8/uint8
@@ -151,7 +162,9 @@ def quantize_q8(
         tensors_range=None,
         nodes_to_quantize=[],
         nodes_to_exclude=[],
-        op_types_to_quantize=list(IntegerOpsRegistry.keys()),
+        op_types_to_quantize=[
+            op for op in IntegerOpsRegistry.keys() if op not in op_block_list
+        ],
         extra_options=dict(
             EnableSubgraph=True,
             MatMulConstBOnly=True,
@@ -165,6 +178,7 @@ def quantize_q8(
 def quantize_fp16(
     model: onnx.ModelProto,
     save_path: str,
+    op_block_list: List[str] = [],
 ):
     """
     Quantize the weights of the model from float32 to float16
@@ -178,6 +192,8 @@ def quantize_fp16(
         model,
         keep_io_types=True,
         disable_shape_infer=disable_shape_infer,
+        op_block_list=op_block_list,
+
     )
     graph = gs.import_onnx(model_fp16)
     graph.toposort()
@@ -191,6 +207,7 @@ def quantize_q4(
     block_size: int,
     is_symmetric: bool,
     accuracy_level: int,
+    op_block_list: List[str] = [],
 ):
     """
     Quantize the weights of the model from float32 to 4-bit int
@@ -213,6 +230,7 @@ def quantize_bnb4(
     save_path: str,
     block_size: int,
     quant_type: int,
+    op_block_list: List[str] = [],
 ):
     """
     Quantize the weights of the model from float32 to 4-bit int using MatMulBnb4Quantizer
@@ -282,6 +300,7 @@ def quantize(input_folder, output_folder, quantization_args: QuantizationArgumen
                     block_size=block_size,
                     is_symmetric=quantization_args.is_symmetric,
                     accuracy_level=quantization_args.accuracy_level,
+                    op_block_list=quantization_args.op_block_list,
                 )
                 if mode == QuantMode.Q4F16:
                     quantize_fp16(
@@ -299,6 +318,7 @@ def quantize(input_folder, output_folder, quantization_args: QuantizationArgumen
                         if quantization_args.quant_type is not None
                         else MatMulBnb4Quantizer.NF4
                     ),
+                    op_block_list=quantization_args.op_block_list,
                 )
 
             elif mode in (QuantMode.Q8, QuantMode.QI8, QuantMode.QU8):
@@ -331,6 +351,7 @@ def quantize(input_folder, output_folder, quantization_args: QuantizationArgumen
                     per_channel=quantization_args.per_channel,
                     reduce_range=quantization_args.reduce_range,
                     weight_type=weight_type,
+                    op_block_list=quantization_args.op_block_list,
                 )
 
 
