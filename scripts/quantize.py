@@ -193,7 +193,7 @@ def quantize_fp16(
         keep_io_types=True,
         disable_shape_infer=disable_shape_infer,
         op_block_list=op_block_list,
-
+        # node_block_list=["/visual/patch_embed/proj/Conv"],
     )
     graph = gs.import_onnx(model_fp16)
     graph.toposort()
