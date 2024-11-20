@@ -698,7 +698,7 @@ xdescribe("Pipelines", () => {
     );
   });
 
-  describe.only("Speech-to-text generation", () => {
+  describe("Speech-to-text generation", () => {
     // List all models which will be tested
     const models = [
       // whisper
