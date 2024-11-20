@@ -748,7 +748,8 @@ xdescribe("Pipelines", () => {
                 audioData64[i] = audioData[i];
             }
 
-            let output = await transcriber(audioData64);
+            let output = await transcriber(audioData64, {return_timestamps: true});
+            console.log({output});
             expect(output.text.length).toBeGreaterThan(50);
             expect(output.chunks.length).toBeGreaterThan(0);
             // { text: " And so my fellow Americans ask not what your country can do for you, ask what you can do for your country." }
@@ -828,20 +829,6 @@ xdescribe("Pipelines", () => {
           };
 
           compare(output, target);
-        }
-
-        {
-            // Float64Array input test case
-
-            let audioData64 = new Float64Array(audioData.length);
-            for (let i = 0; i < audioData64.length; i++) {
-                audioData64[i] = audioData[i];
-            }
-
-            let output = await transcriber(audioData64);
-            expect(output.text.length).toBeGreaterThan(50);
-            expect(output.chunks.length).toBeGreaterThan(0);
-            // { text: " And so my fellow Americans ask not what your country can do for you, ask what you can do for your country." }
         }
 
         await transcriber.dispose();
