@@ -749,7 +749,6 @@ xdescribe("Pipelines", () => {
             }
 
             let output = await transcriber(audioData64, {return_timestamps: true});
-            console.log({output});
             expect(output.text.length).toBeGreaterThan(50);
             expect(output.chunks.length).toBeGreaterThan(0);
             // { text: " And so my fellow Americans ask not what your country can do for you, ask what you can do for your country." }
