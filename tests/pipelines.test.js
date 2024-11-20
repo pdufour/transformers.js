@@ -739,6 +739,20 @@ xdescribe("Pipelines", () => {
           //   ]
           // }
         }
+
+        {
+            // Float64Array input test case
+
+            let audioData64 = new Float64Array(audioData.length);
+            for (let i = 0; i < audioData64.length; i++) {
+                audioData64[i] = audioData[i];
+            }
+
+            let output = await transcriber(audioData64);
+            expect(output.text.length).toBeGreaterThan(50);
+            expect(output.chunks.length).toBeGreaterThan(0);
+        }
+
         await transcriber.dispose();
       },
       MAX_TEST_EXECUTION_TIME,
