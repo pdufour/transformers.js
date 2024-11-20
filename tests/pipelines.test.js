@@ -740,19 +740,6 @@ xdescribe("Pipelines", () => {
           // }
         }
 
-        {
-            // Float64Array input test case
-
-            let audioData64 = new Float64Array(audioData.length);
-            for (let i = 0; i < audioData64.length; i++) {
-                audioData64[i] = audioData[i];
-            }
-
-            let output = await transcriber(audioData64);
-            expect(output.text.length).toBeGreaterThan(50);
-            expect(output.chunks.length).toBeGreaterThan(0);
-        }
-
         await transcriber.dispose();
       },
       MAX_TEST_EXECUTION_TIME,
@@ -827,6 +814,20 @@ xdescribe("Pipelines", () => {
           };
 
           compare(output, target);
+        }
+
+        {
+            // Float64Array input test case
+
+            let audioData64 = new Float64Array(audioData.length);
+            for (let i = 0; i < audioData64.length; i++) {
+                audioData64[i] = audioData[i];
+            }
+
+            let output = await transcriber(audioData64);
+            expect(output.text.length).toBeGreaterThan(50);
+            expect(output.chunks.length).toBeGreaterThan(0);
+            // { text: " And so my fellow Americans ask not what your country can do for you, ask what you can do for your country." }
         }
 
         await transcriber.dispose();
