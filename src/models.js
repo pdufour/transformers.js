@@ -182,7 +182,7 @@ async function getSession(pretrained_model_name_or_path, fileName, options) {
     // Overwrite `freeDimensionOverrides` if specified in config and not set in session options
     const free_dimension_overrides = custom_config.free_dimension_overrides;
     if (free_dimension_overrides) {
-        session_options.freeDimensionOverrides ??= free_dimension_overrides;
+                         session_options.freeDimensionOverrides ??= free_dimension_overrides;
     } else if (selectedDevice.startsWith("webnn") && !session_options.freeDimensionOverrides) {
         console.warn(
             'WebNN does not currently support dynamic shapes and requires `free_dimension_overrides` to be set in config.json as a field within "transformers.js_config". ' +
