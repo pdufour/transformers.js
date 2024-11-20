@@ -8,5 +8,3 @@ types
 *.md
 # Ignore python related files
 .venv
-# Mac files
-.DS_STORE
