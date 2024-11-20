@@ -1,4 +1,3 @@
-
 /**
  * @module generation/stopping_criteria
  */
@@ -13,7 +12,7 @@ import { Callable } from "../utils/generic.js";
  */
 export class StoppingCriteria extends Callable {
     /**
-     * 
+     *
      * @param {number[][]} input_ids (`number[][]` of shape `(batch_size, sequence_length)`):
      * Indices of input sequence tokens in the vocabulary.
      * @param {number[][]} scores scores (`number[][]` of shape `(batch_size, config.vocab_size)`):
@@ -80,9 +79,8 @@ export class StoppingCriteriaList extends Callable {
  * Keep in mind for decoder-only type of transformers, this will include the initial prompted tokens.
  */
 export class MaxLengthCriteria extends StoppingCriteria {
-
     /**
-     * 
+     *
      * @param {number} max_length The maximum length that the output sequence can have in number of tokens.
      * @param {number} [max_position_embeddings=null] The maximum model length, as defined by the model's `config.max_position_embeddings` attribute.
      */
@@ -93,7 +91,7 @@ export class MaxLengthCriteria extends StoppingCriteria {
     }
 
     _call(input_ids) {
-        return input_ids.map(ids => ids.length >= this.max_length);
+        return input_ids.map((ids) => ids.length >= this.max_length);
     }
 }
 
@@ -104,9 +102,8 @@ export class MaxLengthCriteria extends StoppingCriteria {
  * By default, it uses the `model.generation_config.eos_token_id`.
  */
 export class EosTokenCriteria extends StoppingCriteria {
-
     /**
-     * 
+     *
      * @param {number|number[]} eos_token_id The id of the *end-of-sequence* token.
      * Optionally, use a list to set multiple *end-of-sequence* tokens.
      */
@@ -119,16 +116,16 @@ export class EosTokenCriteria extends StoppingCriteria {
     }
 
     /**
-     * 
-     * @param {number[][]} input_ids 
-     * @param {number[][]} scores 
+     *
+     * @param {number[][]} input_ids
+     * @param {number[][]} scores
      * @returns {boolean[]}
      */
     _call(input_ids, scores) {
-        return input_ids.map(ids => {
+        return input_ids.map((ids) => {
             const last = ids.at(-1);
             // NOTE: We use == instead of === to allow for number/bigint comparison
-            return this.eos_token_id.some(eos_id => last == eos_id);
+            return this.eos_token_id.some((eos_id) => last == eos_id);
         });
     }
 }

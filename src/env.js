@@ -1,42 +1,42 @@
 /**
  * @file Module used to configure Transformers.js.
- * 
+ *
  * **Example:** Disable remote models.
  * ```javascript
  * import { env } from '@huggingface/transformers';
  * env.allowRemoteModels = false;
  * ```
- * 
+ *
  * **Example:** Set local model path.
  * ```javascript
  * import { env } from '@huggingface/transformers';
  * env.localModelPath = '/path/to/local/models/';
  * ```
- * 
+ *
  * **Example:** Set cache directory.
  * ```javascript
  * import { env } from '@huggingface/transformers';
  * env.cacheDir = '/path/to/cache/directory/';
  * ```
- * 
+ *
  * @module env
  */
 
-import fs from 'fs';
-import path from 'path';
-import url from 'url';
+import fs from "fs";
+import path from "path";
+import url from "url";
 
-const VERSION = '3.0.2';
+const VERSION = "3.0.2";
 
 // Check if various APIs are available (depends on environment)
-const IS_BROWSER_ENV = typeof self !== 'undefined';
-const IS_WEBWORKER_ENV = IS_BROWSER_ENV && self.constructor.name === 'DedicatedWorkerGlobalScope';
-const IS_WEB_CACHE_AVAILABLE = IS_BROWSER_ENV && 'caches' in self;
-const IS_WEBGPU_AVAILABLE = typeof navigator !== 'undefined' && 'gpu' in navigator;
-const IS_WEBNN_AVAILABLE = typeof navigator !== 'undefined' && 'ml' in navigator;
+const IS_BROWSER_ENV = typeof self !== "undefined";
+const IS_WEBWORKER_ENV = IS_BROWSER_ENV && self.constructor.name === "DedicatedWorkerGlobalScope";
+const IS_WEB_CACHE_AVAILABLE = IS_BROWSER_ENV && "caches" in self;
+const IS_WEBGPU_AVAILABLE = typeof navigator !== "undefined" && "gpu" in navigator;
+const IS_WEBNN_AVAILABLE = typeof navigator !== "undefined" && "ml" in navigator;
 
-const IS_PROCESS_AVAILABLE = typeof process !== 'undefined';
-const IS_NODE_ENV = IS_PROCESS_AVAILABLE && process?.release?.name === 'node';
+const IS_PROCESS_AVAILABLE = typeof process !== "undefined";
+const IS_NODE_ENV = IS_PROCESS_AVAILABLE && process?.release?.name === "node";
 const IS_FS_AVAILABLE = !isEmpty(fs);
 const IS_PATH_AVAILABLE = !isEmpty(path);
 
@@ -74,7 +74,7 @@ export const apis = Object.freeze({
 
 const RUNNING_LOCALLY = IS_FS_AVAILABLE && IS_PATH_AVAILABLE;
 
-let dirname__ = './';
+let dirname__ = "./";
 if (RUNNING_LOCALLY) {
     // NOTE: We wrap `import.meta` in a call to `Object` to prevent Webpack from trying to bundle it in CommonJS.
     // Although we get the warning: "Accessing import.meta directly is unsupported (only property access or destructuring is supported)",
@@ -82,22 +82,18 @@ if (RUNNING_LOCALLY) {
     const _import_meta_url = Object(import.meta).url;
 
     if (_import_meta_url) {
-        dirname__ = path.dirname(path.dirname(url.fileURLToPath(_import_meta_url))) // ESM
-    } else if (typeof __dirname !== 'undefined') {
-        dirname__ = path.dirname(__dirname) // CommonJS
+        dirname__ = path.dirname(path.dirname(url.fileURLToPath(_import_meta_url))); // ESM
+    } else if (typeof __dirname !== "undefined") {
+        dirname__ = path.dirname(__dirname); // CommonJS
     }
 }
 
 // Only used for environments with access to file system
-const DEFAULT_CACHE_DIR = RUNNING_LOCALLY
-    ? path.join(dirname__, '/.cache/')
-    : null;
+const DEFAULT_CACHE_DIR = RUNNING_LOCALLY ? path.join(dirname__, "/.cache/") : null;
 
 // Set local model path, based on available APIs
-const DEFAULT_LOCAL_MODEL_PATH = '/models/';
-const localModelPath = RUNNING_LOCALLY
-    ? path.join(dirname__, DEFAULT_LOCAL_MODEL_PATH)
-    : DEFAULT_LOCAL_MODEL_PATH;
+const DEFAULT_LOCAL_MODEL_PATH = "/models/";
+const localModelPath = RUNNING_LOCALLY ? path.join(dirname__, DEFAULT_LOCAL_MODEL_PATH) : DEFAULT_LOCAL_MODEL_PATH;
 
 /**
  * Global variable given visible to users to control execution. This provides users a simple way to configure Transformers.js.
@@ -134,8 +130,8 @@ export const env = {
 
     /////////////////// Model settings ///////////////////
     allowRemoteModels: true,
-    remoteHost: 'https://huggingface.co/',
-    remotePathTemplate: '{model}/resolve/{revision}/',
+    remoteHost: "https://huggingface.co/",
+    remotePathTemplate: "{model}/resolve/{revision}/",
 
     allowLocalModels: !IS_BROWSER_ENV,
     localModelPath: localModelPath,
@@ -150,8 +146,7 @@ export const env = {
     useCustomCache: false,
     customCache: null,
     //////////////////////////////////////////////////////
-}
-
+};
 
 /**
  * @param {Object} obj
@@ -160,4 +155,3 @@ export const env = {
 function isEmpty(obj) {
     return Object.keys(obj).length === 0;
 }
-

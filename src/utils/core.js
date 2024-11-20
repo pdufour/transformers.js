@@ -1,10 +1,9 @@
-
 /**
  * @file Core utility functions/classes for Transformers.js.
- * 
+ *
  * These are only used internally, meaning an end-user shouldn't
  * need to access anything here.
- * 
+ *
  * @module utils/core
  */
 
@@ -39,20 +38,19 @@ export function reverseDictionary(data) {
  * @returns {string} The escaped string.
  */
 export function escapeRegExp(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+    return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
 }
 
 /**
  * Check if a value is a typed array.
  * @param {*} val The value to check.
  * @returns {boolean} True if the value is a `TypedArray`, false otherwise.
- * 
+ *
  * Adapted from https://stackoverflow.com/a/71091338/13989043
  */
 export function isTypedArray(val) {
-    return val?.prototype?.__proto__?.constructor?.name === 'TypedArray';
+    return val?.prototype?.__proto__?.constructor?.name === "TypedArray";
 }
-
 
 /**
  * Check if a value is an integer.
@@ -60,7 +58,7 @@ export function isTypedArray(val) {
  * @returns {boolean} True if the value is a string, false otherwise.
  */
 export function isIntegralNumber(x) {
-    return Number.isInteger(x) || typeof x === 'bigint'
+    return Number.isInteger(x) || typeof x === "bigint";
 }
 
 /**
@@ -94,7 +92,7 @@ export function pop(obj, key, defaultValue = undefined) {
         return value;
     }
     if (defaultValue === undefined) {
-        throw Error(`Key ${key} does not exist in object.`)
+        throw Error(`Key ${key} does not exist in object.`);
     }
     return defaultValue;
 }
@@ -118,7 +116,7 @@ export function mergeArrays(...arrs) {
 export function product(...a) {
     // Cartesian product of items
     // Adapted from https://stackoverflow.com/a/43053803
-    return a.reduce((a, b) => a.flatMap(d => b.map(e => [d, e])));
+    return a.reduce((a, b) => a.flatMap((d) => b.map((e) => [d, e])));
 }
 
 /**
@@ -128,13 +126,13 @@ export function product(...a) {
  * @returns {number} The index offset.
  */
 export function calculateReflectOffset(i, w) {
-    return Math.abs((i + w) % (2 * w) - w);
+    return Math.abs(((i + w) % (2 * w)) - w);
 }
 
 /**
- * 
- * @param {Object} o 
- * @param {string[]} props 
+ *
+ * @param {Object} o
+ * @param {string[]} props
  * @returns {Object}
  */
 export function pick(o, props) {
@@ -144,14 +142,14 @@ export function pick(o, props) {
             if (o[prop] !== undefined) {
                 return { [prop]: o[prop] };
             }
-        })
+        }),
     );
 }
 
 /**
  * Calculate the length of a string, taking multi-byte characters into account.
  * This mimics the behavior of Python's `len` function.
- * @param {string} s The string to calculate the length of. 
+ * @param {string} s The string to calculate the length of.
  * @returns {number} The length of the string.
  */
 export function len(s) {

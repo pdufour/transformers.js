@@ -1,10 +1,9 @@
-
 /**
  * @file Helper module for using model configs. For more information, see the corresponding
  * [Python documentation](https://huggingface.co/docs/transformers/main/en/model_doc/auto#transformers.AutoConfig).
- * 
+ *
  * **Example:** Load an `AutoConfig`.
- * 
+ *
  * ```javascript
  * import { AutoConfig } from '@huggingface/transformers';
  * const config = await AutoConfig.from_pretrained('bert-base-uncased');
@@ -23,19 +22,16 @@
  * //   ...
  * // }
  * ```
- * 
+ *
  * @module configs
  */
 
-import { pick } from './utils/core.js';
-import {
-    getModelJSON,
-} from './utils/hub.js';
+import { pick } from "./utils/core.js";
+import { getModelJSON } from "./utils/hub.js";
 
 /**
  * @typedef {import('./utils/hub.js').PretrainedOptions} PretrainedOptions
  */
-
 
 /**
  * Loads a config from the specified path.
@@ -44,12 +40,12 @@ import {
  * @returns {Promise<Object>} A promise that resolves with information about the loaded config.
  */
 async function loadConfig(pretrained_model_name_or_path, options) {
-    return await getModelJSON(pretrained_model_name_or_path, 'config.json', true, options);
+    return await getModelJSON(pretrained_model_name_or_path, "config.json", true, options);
 }
 
 /**
- * 
- * @param {PretrainedConfig} config 
+ *
+ * @param {PretrainedConfig} config
  * @returns {Object} The normalized configuration.
  */
 function getNormalizedConfig(config) {
@@ -58,129 +54,129 @@ function getNormalizedConfig(config) {
     let init_normalized_config = {};
     switch (config.model_type) {
         // Sub-configs
-        case 'llava':
-        case 'paligemma':
-        case 'florence2':
+        case "llava":
+        case "paligemma":
+        case "florence2":
             init_normalized_config = getNormalizedConfig(config.text_config);
             break;
-        case 'moondream1':
+        case "moondream1":
             init_normalized_config = getNormalizedConfig(config.phi_config);
             break;
-        case 'musicgen':
+        case "musicgen":
             init_normalized_config = getNormalizedConfig(config.decoder);
             break;
 
         // Decoder-only models
-        case 'gpt2':
-        case 'gptj':
-        case 'jais':
-        case 'codegen':
-        case 'gpt_bigcode':
-            mapping['num_heads'] = 'n_head';
-            mapping['num_layers'] = 'n_layer';
-            mapping['hidden_size'] = 'n_embd';
+        case "gpt2":
+        case "gptj":
+        case "jais":
+        case "codegen":
+        case "gpt_bigcode":
+            mapping["num_heads"] = "n_head";
+            mapping["num_layers"] = "n_layer";
+            mapping["hidden_size"] = "n_embd";
             break;
-        case 'gpt_neox':
-        case 'stablelm':
-        case 'opt':
-        case 'phi':
-        case 'phi3':
-        case 'falcon':
-            mapping['num_heads'] = 'num_attention_heads';
-            mapping['num_layers'] = 'num_hidden_layers';
-            mapping['hidden_size'] = 'hidden_size';
+        case "gpt_neox":
+        case "stablelm":
+        case "opt":
+        case "phi":
+        case "phi3":
+        case "falcon":
+            mapping["num_heads"] = "num_attention_heads";
+            mapping["num_layers"] = "num_hidden_layers";
+            mapping["hidden_size"] = "hidden_size";
             break;
-        case 'llama':
-        case 'olmo':
-        case 'mobilellm':
-        case 'granite':
-        case 'cohere':
-        case 'mistral':
-        case 'starcoder2':
-        case 'qwen2':
-            mapping['num_heads'] = 'num_key_value_heads';
-            mapping['num_layers'] = 'num_hidden_layers';
-            mapping['hidden_size'] = 'hidden_size';
-            mapping['num_attention_heads'] = 'num_attention_heads';
+        case "llama":
+        case "olmo":
+        case "mobilellm":
+        case "granite":
+        case "cohere":
+        case "mistral":
+        case "starcoder2":
+        case "qwen2":
+            mapping["num_heads"] = "num_key_value_heads";
+            mapping["num_layers"] = "num_hidden_layers";
+            mapping["hidden_size"] = "hidden_size";
+            mapping["num_attention_heads"] = "num_attention_heads";
             break;
-        case 'gemma':
-        case 'gemma2':
-            mapping['num_heads'] = 'num_key_value_heads';
-            mapping['num_layers'] = 'num_hidden_layers';
-            mapping['dim_kv'] = 'head_dim';
+        case "gemma":
+        case "gemma2":
+            mapping["num_heads"] = "num_key_value_heads";
+            mapping["num_layers"] = "num_hidden_layers";
+            mapping["dim_kv"] = "head_dim";
             break;
-        case 'openelm':
-            mapping['num_heads'] = 'num_kv_heads';
-            mapping['num_layers'] = 'num_transformer_layers';
-            mapping['dim_kv'] = 'head_dim';
+        case "openelm":
+            mapping["num_heads"] = "num_kv_heads";
+            mapping["num_layers"] = "num_transformer_layers";
+            mapping["dim_kv"] = "head_dim";
             break;
-        case 'gpt_neo':
-        case 'donut-swin':
-            mapping['num_heads'] = 'num_heads';
-            mapping['num_layers'] = 'num_layers';
-            mapping['hidden_size'] = 'hidden_size';
+        case "gpt_neo":
+        case "donut-swin":
+            mapping["num_heads"] = "num_heads";
+            mapping["num_layers"] = "num_layers";
+            mapping["hidden_size"] = "hidden_size";
             break;
-        case 'bloom':
-            mapping['num_heads'] = 'n_head';
-            mapping['num_layers'] = 'n_layer';
-            mapping['hidden_size'] = 'hidden_size';
+        case "bloom":
+            mapping["num_heads"] = "n_head";
+            mapping["num_layers"] = "n_layer";
+            mapping["hidden_size"] = "hidden_size";
             break;
-        case 'mpt':
-            mapping['num_heads'] = 'n_heads';
-            mapping['num_layers'] = 'n_layers';
-            mapping['hidden_size'] = 'd_model';
+        case "mpt":
+            mapping["num_heads"] = "n_heads";
+            mapping["num_layers"] = "n_layers";
+            mapping["hidden_size"] = "d_model";
             break;
 
         // Encoder-decoder models
-        case 't5':
-        case 'mt5':
-        case 'longt5':
-            mapping['num_decoder_layers'] = 'num_decoder_layers';
-            mapping['num_decoder_heads'] = 'num_heads';
-            mapping['decoder_dim_kv'] = 'd_kv';
-            mapping['num_encoder_layers'] = 'num_layers';
-            mapping['num_encoder_heads'] = 'num_heads';
-            mapping['encoder_dim_kv'] = 'd_kv';
+        case "t5":
+        case "mt5":
+        case "longt5":
+            mapping["num_decoder_layers"] = "num_decoder_layers";
+            mapping["num_decoder_heads"] = "num_heads";
+            mapping["decoder_dim_kv"] = "d_kv";
+            mapping["num_encoder_layers"] = "num_layers";
+            mapping["num_encoder_heads"] = "num_heads";
+            mapping["encoder_dim_kv"] = "d_kv";
             break;
-        case 'bart':
-        case 'mbart':
-        case 'marian':
-        case 'whisper':
-        case 'm2m_100':
-        case 'blenderbot':
-        case 'blenderbot-small':
-        case 'florence2_language':
-            mapping['num_decoder_layers'] = 'decoder_layers';
-            mapping['num_decoder_heads'] = 'decoder_attention_heads';
-            mapping['decoder_hidden_size'] = 'd_model';
-            mapping['num_encoder_layers'] = 'encoder_layers';
-            mapping['num_encoder_heads'] = 'encoder_attention_heads';
-            mapping['encoder_hidden_size'] = 'd_model';
+        case "bart":
+        case "mbart":
+        case "marian":
+        case "whisper":
+        case "m2m_100":
+        case "blenderbot":
+        case "blenderbot-small":
+        case "florence2_language":
+            mapping["num_decoder_layers"] = "decoder_layers";
+            mapping["num_decoder_heads"] = "decoder_attention_heads";
+            mapping["decoder_hidden_size"] = "d_model";
+            mapping["num_encoder_layers"] = "encoder_layers";
+            mapping["num_encoder_heads"] = "encoder_attention_heads";
+            mapping["encoder_hidden_size"] = "d_model";
             break;
-        case 'speecht5':
-            mapping['num_decoder_layers'] = 'decoder_layers';
-            mapping['num_decoder_heads'] = 'decoder_attention_heads';
-            mapping['decoder_hidden_size'] = 'hidden_size';
-            mapping['num_encoder_layers'] = 'encoder_layers';
-            mapping['num_encoder_heads'] = 'encoder_attention_heads';
-            mapping['encoder_hidden_size'] = 'hidden_size';
+        case "speecht5":
+            mapping["num_decoder_layers"] = "decoder_layers";
+            mapping["num_decoder_heads"] = "decoder_attention_heads";
+            mapping["decoder_hidden_size"] = "hidden_size";
+            mapping["num_encoder_layers"] = "encoder_layers";
+            mapping["num_encoder_heads"] = "encoder_attention_heads";
+            mapping["encoder_hidden_size"] = "hidden_size";
             break;
-        case 'trocr':
-            mapping['num_encoder_layers'] = mapping['num_decoder_layers'] = 'decoder_layers';
-            mapping['num_encoder_heads'] = mapping['num_decoder_heads'] = 'decoder_attention_heads';
-            mapping['encoder_hidden_size'] = mapping['decoder_hidden_size'] = 'd_model';
+        case "trocr":
+            mapping["num_encoder_layers"] = mapping["num_decoder_layers"] = "decoder_layers";
+            mapping["num_encoder_heads"] = mapping["num_decoder_heads"] = "decoder_attention_heads";
+            mapping["encoder_hidden_size"] = mapping["decoder_hidden_size"] = "d_model";
             break;
-        case 'musicgen_decoder':
-            mapping['num_encoder_layers'] = mapping['num_decoder_layers'] = 'num_hidden_layers';
-            mapping['num_encoder_heads'] = mapping['num_decoder_heads'] = 'num_attention_heads';
-            mapping['encoder_hidden_size'] = mapping['decoder_hidden_size'] = 'hidden_size';
+        case "musicgen_decoder":
+            mapping["num_encoder_layers"] = mapping["num_decoder_layers"] = "num_hidden_layers";
+            mapping["num_encoder_heads"] = mapping["num_decoder_heads"] = "num_attention_heads";
+            mapping["encoder_hidden_size"] = mapping["decoder_hidden_size"] = "hidden_size";
             break;
 
-        case 'vision-encoder-decoder':
+        case "vision-encoder-decoder":
             const decoderConfig = getNormalizedConfig(config.decoder);
 
-            const add_encoder_pkv = 'num_decoder_layers' in decoderConfig;
-            const result = pick(config, ['model_type', 'is_encoder_decoder']);
+            const add_encoder_pkv = "num_decoder_layers" in decoderConfig;
+            const result = pick(config, ["model_type", "is_encoder_decoder"]);
             if (add_encoder_pkv) {
                 // Decoder is part of an encoder-decoder model
                 result.num_decoder_layers = decoderConfig.num_decoder_layers;
@@ -197,13 +193,12 @@ function getNormalizedConfig(config) {
                 result.hidden_size = decoderConfig.hidden_size;
             }
             return result;
-
     }
 
     // NOTE: If `num_attention_heads` is not set, it is assumed to be equal to `num_heads`
     const normalized_config = {
         ...init_normalized_config,
-        ...pick(config, ['model_type', 'multi_query', 'is_encoder_decoder']),
+        ...pick(config, ["model_type", "multi_query", "is_encoder_decoder"]),
     };
     for (const key in mapping) {
         normalized_config[key] = config[mapping[key]];
@@ -212,13 +207,11 @@ function getNormalizedConfig(config) {
 }
 
 /**
- * 
- * @param {PretrainedConfig} config 
+ *
+ * @param {PretrainedConfig} config
  * @returns {Record<string, number[]>}
  */
-export function getKeyValueShapes(config, {
-    prefix = 'past_key_values',
-} = {}) {
+export function getKeyValueShapes(config, { prefix = "past_key_values" } = {}) {
     /** @type {Record<string, number[]>} */
     const decoderFeeds = {};
     const normalized_config = config.normalized_config;
@@ -226,15 +219,17 @@ export function getKeyValueShapes(config, {
     // TODO support batches (i.e., batch_size > 1)
     const batch_size = 1;
 
-    if (normalized_config.is_encoder_decoder && (
-        'num_encoder_heads' in normalized_config && 'num_decoder_heads' in normalized_config
-    )) {
-        const encoder_dim_kv = normalized_config.encoder_dim_kv ?? (
-            normalized_config.encoder_hidden_size / normalized_config.num_encoder_heads
-        );
-        const decoder_dim_kv = normalized_config.decoder_dim_kv ?? (
-            normalized_config.decoder_hidden_size / normalized_config.num_decoder_heads
-        );
+    if (
+        normalized_config.is_encoder_decoder &&
+        "num_encoder_heads" in normalized_config &&
+        "num_decoder_heads" in normalized_config
+    ) {
+        const encoder_dim_kv =
+            normalized_config.encoder_dim_kv ??
+            normalized_config.encoder_hidden_size / normalized_config.num_encoder_heads;
+        const decoder_dim_kv =
+            normalized_config.decoder_dim_kv ??
+            normalized_config.decoder_hidden_size / normalized_config.num_decoder_heads;
 
         const encoder_dims = [batch_size, normalized_config.num_encoder_heads, 0, encoder_dim_kv];
         const decoder_dims = [batch_size, normalized_config.num_decoder_heads, 0, decoder_dim_kv];
@@ -244,45 +239,47 @@ export function getKeyValueShapes(config, {
             decoderFeeds[`${prefix}.${i}.decoder.key`] = decoder_dims;
             decoderFeeds[`${prefix}.${i}.decoder.value`] = decoder_dims;
         }
-    } else { // Decoders
+    } else {
+        // Decoders
         const num_heads = normalized_config.num_heads;
         const num_layers = normalized_config.num_layers;
-        const dim_kv = normalized_config.dim_kv ?? (
-            normalized_config.hidden_size /
-            (normalized_config.num_attention_heads ?? num_heads)
-        );
+        const dim_kv =
+            normalized_config.dim_kv ??
+            normalized_config.hidden_size / (normalized_config.num_attention_heads ?? num_heads);
 
-        if (normalized_config.model_type === 'falcon') {
+        if (normalized_config.model_type === "falcon") {
             // NOTE: Custom implementation for Falcon
-            const dims = [batch_size * num_heads, 0, dim_kv]
+            const dims = [batch_size * num_heads, 0, dim_kv];
             for (let i = 0; i < num_layers; ++i) {
                 decoderFeeds[`${prefix}.${i}.key`] = dims;
                 decoderFeeds[`${prefix}.${i}.value`] = dims;
             }
-        } else if (normalized_config.multi_query) { // e.g., for `gpt_bigcode`
-            const dims = [batch_size * num_heads, 0, 2 * dim_kv]
+        } else if (normalized_config.multi_query) {
+            // e.g., for `gpt_bigcode`
+            const dims = [batch_size * num_heads, 0, 2 * dim_kv];
 
             for (let i = 0; i < num_layers; ++i) {
                 decoderFeeds[`${prefix}.${i}.key_value`] = dims;
             }
-        } else if (normalized_config.model_type === 'bloom') {
+        } else if (normalized_config.model_type === "bloom") {
             // NOTE: Custom implementation for Bloom
 
-            const keyDims = [batch_size * num_heads, dim_kv, 0] // [batch_size x num_heads,64,past_sequence_length]
-            const valueDims = [batch_size * num_heads, 0, dim_kv] // [batch_size x num_heads,past_sequence_length,64]
+            const keyDims = [batch_size * num_heads, dim_kv, 0]; // [batch_size x num_heads,64,past_sequence_length]
+            const valueDims = [batch_size * num_heads, 0, dim_kv]; // [batch_size x num_heads,past_sequence_length,64]
             for (let i = 0; i < num_layers; ++i) {
                 decoderFeeds[`${prefix}.${i}.key`] = keyDims;
                 decoderFeeds[`${prefix}.${i}.value`] = valueDims;
             }
-        } else if (normalized_config.model_type === 'openelm') {
+        } else if (normalized_config.model_type === "openelm") {
             for (let i = 0; i < num_layers; ++i) {
-                const dims = [batch_size, num_heads[i], 0, dim_kv]
+                const dims = [batch_size, num_heads[i], 0, dim_kv];
 
                 decoderFeeds[`${prefix}.${i}.key`] = dims;
                 decoderFeeds[`${prefix}.${i}.value`] = dims;
             }
-        } else { // Decoder-only
-            const dims = [batch_size, num_heads, 0, dim_kv]
+        } else {
+            // Decoder-only
+            const dims = [batch_size, num_heads, 0, dim_kv];
             for (let i = 0; i < num_layers; ++i) {
                 decoderFeeds[`${prefix}.${i}.key`] = dims;
                 decoderFeeds[`${prefix}.${i}.value`] = dims;
@@ -309,7 +306,7 @@ export class PretrainedConfig {
     max_position_embeddings;
 
     /** @type {TransformersJSConfig} */
-    'transformers.js_config';
+    "transformers.js_config";
 
     /**
      * Create a new PreTrainedTokenizer instance.
@@ -321,41 +318,40 @@ export class PretrainedConfig {
     }
 
     /**
-     * Loads a pre-trained config from the given `pretrained_model_name_or_path`. 
-     * 
+     * Loads a pre-trained config from the given `pretrained_model_name_or_path`.
+     *
      * @param {string} pretrained_model_name_or_path The path to the pre-trained config.
      * @param {PretrainedOptions} options Additional options for loading the config.
      * @throws {Error} Throws an error if the config.json is not found in the `pretrained_model_name_or_path`.
-     * 
+     *
      * @returns {Promise<PretrainedConfig>} A new instance of the `PretrainedConfig` class.
      */
-    static async from_pretrained(pretrained_model_name_or_path, {
-        progress_callback = null,
-        config = null,
-        cache_dir = null,
-        local_files_only = false,
-        revision = 'main',
-    } = {}) {
+    static async from_pretrained(
+        pretrained_model_name_or_path,
+        { progress_callback = null, config = null, cache_dir = null, local_files_only = false, revision = "main" } = {},
+    ) {
         if (config && !(config instanceof PretrainedConfig)) {
             config = new PretrainedConfig(config);
         }
 
-        const data = config ?? await loadConfig(pretrained_model_name_or_path, {
-            progress_callback,
-            config,
-            cache_dir,
-            local_files_only,
-            revision,
-        })
+        const data =
+            config ??
+            (await loadConfig(pretrained_model_name_or_path, {
+                progress_callback,
+                config,
+                cache_dir,
+                local_files_only,
+                revision,
+            }));
         return new this(data);
     }
 }
 
 /**
  * Helper class which is used to instantiate pretrained configs with the `from_pretrained` function.
- * 
+ *
  * @example
- * const config = await AutoConfig.from_pretrained('Xenova/bert-base-uncased'); 
+ * const config = await AutoConfig.from_pretrained('Xenova/bert-base-uncased');
  */
 export class AutoConfig {
     /** @type {typeof PretrainedConfig.from_pretrained} */

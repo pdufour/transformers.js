@@ -1,5 +1,3 @@
-
-
 const WHISPER_LANGUAGES = [
     ["en", "english"],
     ["zh", "chinese"],
@@ -100,7 +98,7 @@ const WHISPER_LANGUAGES = [
     ["ba", "bashkir"],
     ["jw", "javanese"],
     ["su", "sundanese"],
-]
+];
 
 // @ts-ignore
 export const WHISPER_LANGUAGE_MAPPING = new Map(WHISPER_LANGUAGES);
@@ -119,7 +117,7 @@ export const WHISPER_TO_LANGUAGE_CODE_MAPPING = new Map([
         ["moldovan", "ro"],
         ["sinhalese", "si"],
         ["castilian", "es"],
-    ]
+    ],
 ]);
 
 /**
@@ -138,7 +136,6 @@ export function whisper_language_to_code(language) {
         if (WHISPER_LANGUAGE_MAPPING.has(language)) {
             // User provided the language code directly (e.g., "en")
             language_code = language;
-
         } else {
             // User provided something that is not a language code or name
             const is_language_code = language.length === 2;

@@ -6,3 +6,5 @@ examples
 scripts
 types
 *.md
+# Ignore python related files
+.venv

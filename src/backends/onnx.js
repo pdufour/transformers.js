@@ -6,29 +6,29 @@
  * So, we just import both packages, and use the appropriate one based on the environment:
  *   - When running in node, we use `onnxruntime-node`.
  *   - When running in the browser, we use `onnxruntime-web` (`onnxruntime-node` is not bundled).
- * 
+ *
  * This module is not directly exported, but can be accessed through the environment variables:
  * ```javascript
  * import { env } from '@huggingface/transformers';
  * console.log(env.backends.onnx);
  * ```
- * 
+ *
  * @module backends/onnx
  */
 
-import { env, apis } from '../env.js';
+import { env, apis } from "../env.js";
 
 // NOTE: Import order matters here. We need to import `onnxruntime-node` before `onnxruntime-web`.
 // In either case, we select the default export if it exists, otherwise we use the named export.
-import * as ONNX_NODE from 'onnxruntime-node';
+import * as ONNX_NODE from "onnxruntime-node";
 
 // Use subpath-imports to ensure Node.js and browser interoperability.
 // See package.json and https://nodejs.org/api/packages.html#subpath-imports
 // for more information.
 // @ts-ignore
-import * as ONNX_WEB from '#onnxruntime-webgpu';
+import * as ONNX_WEB from "#onnxruntime-webgpu";
 
-export { Tensor } from 'onnxruntime-common';
+export { Tensor } from "onnxruntime-common";
 
 /**
  * @typedef {import('onnxruntime-common').InferenceSession.ExecutionProviderConfig} ONNXExecutionProviders
@@ -38,19 +38,19 @@ export { Tensor } from 'onnxruntime-common';
 const DEVICE_TO_EXECUTION_PROVIDER_MAPPING = Object.freeze({
     auto: null, // Auto-detect based on device and environment
     gpu: null, // Auto-detect GPU
-    cpu: 'cpu', // CPU
-    wasm: 'wasm', // WebAssembly
-    webgpu: 'webgpu', // WebGPU
-    cuda: 'cuda', // CUDA
-    dml: 'dml', // DirectML
+    cpu: "cpu", // CPU
+    wasm: "wasm", // WebAssembly
+    webgpu: "webgpu", // WebGPU
+    cuda: "cuda", // CUDA
+    dml: "dml", // DirectML
 
-    webnn: { name: 'webnn', deviceType: 'cpu' }, // WebNN (default)
-    'webnn-npu': { name: 'webnn', deviceType: 'npu' }, // WebNN NPU
-    'webnn-gpu': { name: 'webnn', deviceType: 'gpu' }, // WebNN GPU
-    'webnn-cpu': { name: 'webnn', deviceType: 'cpu' }, // WebNN CPU
+    webnn: { name: "webnn", deviceType: "cpu" }, // WebNN (default)
+    "webnn-npu": { name: "webnn", deviceType: "npu" }, // WebNN NPU
+    "webnn-gpu": { name: "webnn", deviceType: "gpu" }, // WebNN GPU
+    "webnn-cpu": { name: "webnn", deviceType: "cpu" }, // WebNN CPU
 });
 
-/** 
+/**
  * The list of supported devices, sorted by priority/performance.
  * @type {import("../utils/devices.js").DeviceType[]}
  */
@@ -59,12 +59,11 @@ const supportedDevices = [];
 /** @type {ONNXExecutionProviders[]} */
 let defaultDevices;
 let ONNX;
-const ORT_SYMBOL = Symbol.for('onnxruntime');
+const ORT_SYMBOL = Symbol.for("onnxruntime");
 
 if (ORT_SYMBOL in globalThis) {
-  // If the JS runtime exposes their own ONNX runtime, use it
-  ONNX = globalThis[ORT_SYMBOL];
-
+    // If the JS runtime exposes their own ONNX runtime, use it
+    ONNX = globalThis[ORT_SYMBOL];
 } else if (apis.IS_NODE_ENV) {
     ONNX = ONNX_NODE.default ?? ONNX_NODE;
 
@@ -76,34 +75,34 @@ if (ORT_SYMBOL in globalThis) {
     // | DirectML      | ✔️          | ✔️            | ❌                | ❌          | ❌        | ❌          |
     // | CUDA          | ❌          | ❌            | ✔️ (CUDA v11.8)   | ❌          | ❌        | ❌          |
     switch (process.platform) {
-        case 'win32': // Windows x64 and Windows arm64
-            supportedDevices.push('dml');
+        case "win32": // Windows x64 and Windows arm64
+            supportedDevices.push("dml");
             break;
-        case 'linux': // Linux x64 and Linux arm64
-            if (process.arch === 'x64') {
-                supportedDevices.push('cuda');
+        case "linux": // Linux x64 and Linux arm64
+            if (process.arch === "x64") {
+                supportedDevices.push("cuda");
             }
             break;
-        case 'darwin': // MacOS x64 and MacOS arm64
+        case "darwin": // MacOS x64 and MacOS arm64
             break;
     }
 
-    supportedDevices.push('cpu');
-    defaultDevices = ['cpu'];
+    supportedDevices.push("cpu");
+    defaultDevices = ["cpu"];
 } else {
     ONNX = ONNX_WEB;
 
     if (apis.IS_WEBNN_AVAILABLE) {
         // TODO: Only push supported providers (depending on available hardware)
-        supportedDevices.push('webnn-npu', 'webnn-gpu', 'webnn-cpu', 'webnn');
+        supportedDevices.push("webnn-npu", "webnn-gpu", "webnn-cpu", "webnn");
     }
 
     if (apis.IS_WEBGPU_AVAILABLE) {
-        supportedDevices.push('webgpu');
+        supportedDevices.push("webgpu");
     }
 
-    supportedDevices.push('wasm');
-    defaultDevices = ['wasm'];
+    supportedDevices.push("wasm");
+    defaultDevices = ["wasm"];
 }
 
 // @ts-ignore
@@ -123,18 +122,15 @@ export function deviceToExecutionProviders(device = null) {
         case "auto":
             return supportedDevices;
         case "gpu":
-            return supportedDevices.filter(x =>
-                ["webgpu", "cuda", "dml", "webnn-gpu"].includes(x),
-            );
+            return supportedDevices.filter((x) => ["webgpu", "cuda", "dml", "webnn-gpu"].includes(x));
     }
 
     if (supportedDevices.includes(device)) {
         return [DEVICE_TO_EXECUTION_PROVIDER_MAPPING[device] ?? device];
     }
 
-    throw new Error(`Unsupported device: "${device}". Should be one of: ${supportedDevices.join(', ')}.`)
+    throw new Error(`Unsupported device: "${device}". Should be one of: ${supportedDevices.join(", ")}.`);
 }
-
 
 /**
  * To prevent multiple calls to `initWasm()`, we store the first call in a Promise
@@ -194,13 +190,13 @@ if (ONNX_ENV?.wasm) {
     ONNX_ENV.wasm.proxy = false;
 
     // https://developer.mozilla.org/en-US/docs/Web/API/crossOriginIsolated
-    if (typeof crossOriginIsolated === 'undefined' || !crossOriginIsolated) {
+    if (typeof crossOriginIsolated === "undefined" || !crossOriginIsolated) {
         ONNX_ENV.wasm.numThreads = 1;
     }
 }
 
 if (ONNX_ENV?.webgpu) {
-    ONNX_ENV.webgpu.powerPreference = 'high-performance';
+    ONNX_ENV.webgpu.powerPreference = "high-performance";
 }
 
 /**

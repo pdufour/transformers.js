@@ -1,4 +1,3 @@
-
 /**
  * @module generation/logits_process
  */
@@ -21,10 +20,9 @@ export class LogitsProcessor extends Callable {
      * @throws {Error} Throws an error if `_call` is not implemented in the subclass.
      */
     _call(input_ids, logits) {
-        throw Error("`_call` should be implemented in a subclass")
+        throw Error("`_call` should be implemented in a subclass");
     }
 }
-
 
 /**
  * Abstract base class for all logit warpers that can be applied during generation with multinomial sampling.
@@ -39,10 +37,9 @@ export class LogitsWarper extends Callable {
      * @throws {Error} Throws an error if `_call` is not implemented in the subclass.
      */
     _call(input_ids, logits) {
-        throw Error("`_call` should be implemented in a subclass")
+        throw Error("`_call` should be implemented in a subclass");
     }
 }
-
 
 /**
  * A class representing a list of logits processors. A logits processor is a function that modifies the logits
@@ -103,7 +100,7 @@ export class LogitsProcessorList extends Callable {
 // export class ForceTokensLogitsProcessor extends LogitsProcessor {
 //     /**
 //      * Constructs a new instance of `ForceTokensLogitsProcessor`.
-//      * 
+//      *
 //      * @param {[number, number][]} forced_decoder_ids The ids of tokens that should be forced.
 //      */
 //     constructor(forced_decoder_ids) {
@@ -156,7 +153,7 @@ export class ForcedBOSTokenLogitsProcessor extends LogitsProcessor {
     _call(input_ids, logits) {
         for (let i = 0; i < input_ids.length; ++i) {
             if (input_ids[i].length === 1) {
-                const batch_logits_data = /** @type {Float32Array} */(logits[i].data);
+                const batch_logits_data = /** @type {Float32Array} */ (logits[i].data);
                 batch_logits_data.fill(-Infinity);
                 batch_logits_data[this.bos_token_id] = 0;
             }
@@ -182,14 +179,14 @@ export class ForcedEOSTokenLogitsProcessor extends LogitsProcessor {
 
     /**
      * Apply the processor to input_ids and logits.
-     * 
+     *
      * @param {bigint[][]} input_ids The input ids.
      * @param {Tensor} logits The logits tensor.
      */
     _call(input_ids, logits) {
         for (let i = 0; i < input_ids.length; ++i) {
             if (input_ids[i].length === this.max_length - 1) {
-                const batch_logits_data = /** @type {Float32Array} */(logits[i].data);
+                const batch_logits_data = /** @type {Float32Array} */ (logits[i].data);
                 batch_logits_data.fill(-Infinity);
                 for (const eos_token of this.eos_token_id) {
                     batch_logits_data[eos_token] = 0;
@@ -226,7 +223,7 @@ export class SuppressTokensAtBeginLogitsProcessor extends LogitsProcessor {
     _call(input_ids, logits) {
         for (let i = 0; i < input_ids.length; ++i) {
             if (input_ids[i].length === this.begin_index) {
-                const batch_logits_data = /** @type {Float32Array} */(logits[i].data);
+                const batch_logits_data = /** @type {Float32Array} */ (logits[i].data);
                 for (const token_id of this.begin_suppress_tokens) {
                     batch_logits_data[token_id] = -Infinity;
                 }
@@ -247,10 +244,9 @@ export class WhisperTimeStampLogitsProcessor extends LogitsProcessor {
      */
     constructor(generate_config, init_tokens) {
         super();
-        this.eos_token_id =
-            Array.isArray(generate_config.eos_token_id)
-                ? generate_config.eos_token_id[0]
-                : generate_config.eos_token_id;
+        this.eos_token_id = Array.isArray(generate_config.eos_token_id)
+            ? generate_config.eos_token_id[0]
+            : generate_config.eos_token_id;
 
         this.no_timestamps_token_id = generate_config.no_timestamps_token_id;
         this.timestamp_begin = this.no_timestamps_token_id + 1;
@@ -270,7 +266,7 @@ export class WhisperTimeStampLogitsProcessor extends LogitsProcessor {
      */
     _call(input_ids, logits) {
         for (let i = 0; i < input_ids.length; ++i) {
-            const batch_logits_data = /** @type {Float32Array} */(logits[i].data);
+            const batch_logits_data = /** @type {Float32Array} */ (logits[i].data);
 
             // suppress <|notimestamps|> which is handled by without_timestamps
             batch_logits_data[this.no_timestamps_token_id] = -Infinity;
@@ -287,9 +283,11 @@ export class WhisperTimeStampLogitsProcessor extends LogitsProcessor {
             const penultimate_was_timestamp = seq.length < 2 || seq[seq.length - 2] >= this.timestamp_begin;
 
             if (last_was_timestamp) {
-                if (penultimate_was_timestamp) { // has to be non-timestamp
+                if (penultimate_was_timestamp) {
+                    // has to be non-timestamp
                     batch_logits_data.subarray(this.timestamp_begin).fill(-Infinity);
-                } else { // cannot be normal text tokens
+                } else {
+                    // cannot be normal text tokens
                     batch_logits_data.subarray(0, this.eos_token_id).fill(-Infinity);
                 }
             }
@@ -302,7 +300,12 @@ export class WhisperTimeStampLogitsProcessor extends LogitsProcessor {
 
             // if sum of probability over timestamps is above any other token, sample timestamp
             const logprobs = log_softmax(batch_logits_data);
-            const timestamp_logprob = Math.log(logprobs.subarray(this.timestamp_begin).map(Math.exp).reduce((a, b) => a + b));
+            const timestamp_logprob = Math.log(
+                logprobs
+                    .subarray(this.timestamp_begin)
+                    .map(Math.exp)
+                    .reduce((a, b) => a + b),
+            );
             const max_text_token_logprob = max(logprobs.subarray(0, this.timestamp_begin))[0];
 
             if (timestamp_logprob > max_text_token_logprob) {
@@ -379,7 +382,6 @@ export class NoRepeatNGramLogitsProcessor extends LogitsProcessor {
         if (prevInputIds.length + 1 < this.no_repeat_ngram_size) {
             // return no banned tokens if we haven't generated no_repeat_ngram_size tokens yet
             return bannedTokens;
-
         } else {
             const generatedNgrams = this.getNgrams(prevInputIds);
             const bannedTokens = this.getGeneratedNgrams(generatedNgrams, prevInputIds);
@@ -395,7 +397,7 @@ export class NoRepeatNGramLogitsProcessor extends LogitsProcessor {
      */
     _call(input_ids, logits) {
         for (let i = 0; i < input_ids.length; ++i) {
-            const batch_logits_data = /** @type {Float32Array} */(logits[i].data);
+            const batch_logits_data = /** @type {Float32Array} */ (logits[i].data);
             const bannedTokens = this.calcBannedNgramTokens(input_ids[i]);
             for (const token of bannedTokens) {
                 batch_logits_data[token] = -Infinity;
@@ -430,7 +432,7 @@ export class RepetitionPenaltyLogitsProcessor extends LogitsProcessor {
         // many times in the output will be penalised more.
 
         for (let i = 0; i < input_ids.length; ++i) {
-            const batch_logits_data = /** @type {Float32Array} */(logits[i].data);
+            const batch_logits_data = /** @type {Float32Array} */ (logits[i].data);
             for (const input_id of input_ids[i]) {
                 const token = Number(input_id);
                 if (batch_logits_data[token] < 0) {
@@ -441,7 +443,7 @@ export class RepetitionPenaltyLogitsProcessor extends LogitsProcessor {
             }
         }
 
-        return logits
+        return logits;
     }
 }
 
@@ -469,7 +471,7 @@ export class MinLengthLogitsProcessor extends LogitsProcessor {
     _call(input_ids, logits) {
         for (let i = 0; i < input_ids.length; ++i) {
             if (input_ids[i].length < this.min_length) {
-                const batch_logits_data = /** @type {Float32Array} */(logits[i].data);
+                const batch_logits_data = /** @type {Float32Array} */ (logits[i].data);
 
                 for (const eos_token of this.eos_token_id) {
                     batch_logits_data[eos_token] = -Infinity;
@@ -477,7 +479,7 @@ export class MinLengthLogitsProcessor extends LogitsProcessor {
             }
         }
 
-        return logits
+        return logits;
     }
 }
 
@@ -508,14 +510,14 @@ export class MinNewTokensLengthLogitsProcessor extends LogitsProcessor {
         for (let i = 0; i < input_ids.length; ++i) {
             const new_tokens_length = input_ids[i].length - this.prompt_length_to_skip;
             if (new_tokens_length < this.min_new_tokens) {
-                const batch_logits_data = /** @type {Float32Array} */(logits[i].data);
+                const batch_logits_data = /** @type {Float32Array} */ (logits[i].data);
 
                 for (const eos_token of this.eos_token_id) {
                     batch_logits_data[eos_token] = -Infinity;
                 }
             }
         }
-        return logits
+        return logits;
     }
 }
 
@@ -539,7 +541,7 @@ export class NoBadWordsLogitsProcessor extends LogitsProcessor {
      */
     _call(input_ids, logits) {
         for (let i = 0; i < input_ids.length; ++i) {
-            const batch_logits_data = /** @type {Float32Array} */(logits[i].data);
+            const batch_logits_data = /** @type {Float32Array} */ (logits[i].data);
             const ids = input_ids[i];
             for (const bad_word_ids of this.bad_words_ids) {
                 // Whether to modify the logits of the last token in the bad word id sequence
@@ -548,7 +550,6 @@ export class NoBadWordsLogitsProcessor extends LogitsProcessor {
                 // For each bad word in the list, if the current sequence of input ids ends with this sequence (excluding the last),
                 // then we set the logits of the last bad word id to -Infinity.
                 for (let j = 1; j <= bad_word_ids.length - 1 && bad_word_ids.length < ids.length; ++j) {
-
                     // NOTE: We use != instead of !== to compare bigint and number
                     // @ts-ignore
                     if (bad_word_ids.at(-j - 1) != ids.at(-j)) {
@@ -562,7 +563,7 @@ export class NoBadWordsLogitsProcessor extends LogitsProcessor {
                 }
             }
         }
-        return logits
+        return logits;
     }
 }
 
@@ -571,11 +572,10 @@ export class NoBadWordsLogitsProcessor extends LogitsProcessor {
  * where the first half correspond to the conditional logits (predicted from the input prompt) and the second half
  * correspond to the unconditional logits (predicted from an empty or 'null' prompt). The processor computes a
  * weighted average across the conditional and unconditional logits, parameterised by the `guidance_scale`.
- * 
+ *
  * See [the paper](https://arxiv.org/abs/2306.05284) for more information.
  */
 export class ClassifierFreeGuidanceLogitsProcessor extends LogitsProcessor {
-
     /**
      * Create a `ClassifierFreeGuidanceLogitsProcessor`.
      * @param {number} guidance_scale The guidance scale for classifier free guidance (CFG). CFG is enabled by setting `guidance_scale > 1`.
@@ -586,8 +586,8 @@ export class ClassifierFreeGuidanceLogitsProcessor extends LogitsProcessor {
         super();
         if (guidance_scale <= 1) {
             throw new Error(
-                `Require guidance scale >1 to use the classifier free guidance processor, got guidance scale ${guidance_scale}.`
-            )
+                `Require guidance scale >1 to use the classifier free guidance processor, got guidance scale ${guidance_scale}.`,
+            );
         }
         this.guidance_scale = guidance_scale;
     }
@@ -602,9 +602,9 @@ export class ClassifierFreeGuidanceLogitsProcessor extends LogitsProcessor {
         if (logits.dims[0] !== 2 * input_ids.length) {
             throw new Error(
                 `Logits should have twice the batch size of the input ids, the first half of batches corresponding to ` +
-                `the conditional inputs, and the second half of batches corresponding to the unconditional inputs. Got ` +
-                `batch size ${logits.dims[0]} for the logits and ${input_ids.length} for the input ids.`
-            )
+                    `the conditional inputs, and the second half of batches corresponding to the unconditional inputs. Got ` +
+                    `batch size ${logits.dims[0]} for the logits and ${input_ids.length} for the input ids.`,
+            );
         }
 
         const unguided_bsz = input_ids.length;
@@ -635,12 +635,11 @@ export class TemperatureLogitsWarper extends LogitsWarper {
     constructor(temperature) {
         super();
 
-        if (typeof temperature !== 'number' || temperature <= 0) {
-            let errorMessage =
-                `\`temperature\` (=${temperature}) must be a strictly positive float, otherwise your next token scores will be invalid.`;
+        if (typeof temperature !== "number" || temperature <= 0) {
+            let errorMessage = `\`temperature\` (=${temperature}) must be a strictly positive float, otherwise your next token scores will be invalid.`;
 
             if (temperature === 0) {
-                errorMessage += " If you're looking for greedy decoding strategies, set `do_sample=false`."
+                errorMessage += " If you're looking for greedy decoding strategies, set `do_sample=false`.";
             }
         }
         this.temperature = temperature;
@@ -653,7 +652,7 @@ export class TemperatureLogitsWarper extends LogitsWarper {
      * @returns {Object} The processed logits.
      */
     _call(input_ids, logits) {
-        const batch_logits_data = /** @type {Float32Array} */(logits.data);
+        const batch_logits_data = /** @type {Float32Array} */ (logits.data);
         for (let i = 0; i < batch_logits_data.length; ++i) {
             batch_logits_data[i] /= this.temperature;
         }
@@ -674,21 +673,18 @@ export class TopPLogitsWarper extends LogitsWarper {
      * @param {number} [options.filter_value=-Infinity] All filtered values will be set to this float value.
      * @param {number} [options.min_tokens_to_keep=1] Minimum number of tokens that cannot be filtered.
      */
-    constructor(top_p, {
-        filter_value = -Infinity,
-        min_tokens_to_keep = 1,
-    } = {}) {
+    constructor(top_p, { filter_value = -Infinity, min_tokens_to_keep = 1 } = {}) {
         super();
         if (top_p < 0 || top_p > 1.0) {
-            throw new Error(`\`top_p\` must be a float > 0 and < 1, but is ${top_p}`)
+            throw new Error(`\`top_p\` must be a float > 0 and < 1, but is ${top_p}`);
         }
         if (!Number.isInteger(min_tokens_to_keep) || min_tokens_to_keep < 1) {
-            throw new Error(`\`min_tokens_to_keep\` must be a positive integer, but is ${min_tokens_to_keep}`)
+            throw new Error(`\`min_tokens_to_keep\` must be a positive integer, but is ${min_tokens_to_keep}`);
         }
 
-        this.top_p = top_p
-        this.filter_value = filter_value
-        this.min_tokens_to_keep = min_tokens_to_keep
+        this.top_p = top_p;
+        this.filter_value = filter_value;
+        this.min_tokens_to_keep = min_tokens_to_keep;
     }
 }
 
@@ -704,16 +700,13 @@ export class TopKLogitsWarper extends LogitsWarper {
      * @param {number} [options.filter_value=-Infinity] All filtered values will be set to this float value.
      * @param {number} [options.min_tokens_to_keep=1] Minimum number of tokens that cannot be filtered.
      */
-    constructor(top_k, {
-        filter_value = -Infinity,
-        min_tokens_to_keep = 1,
-    } = {}) {
+    constructor(top_k, { filter_value = -Infinity, min_tokens_to_keep = 1 } = {}) {
         super();
         if (!Number.isInteger(top_k) || top_k < 0) {
-            throw new Error(`\`top_k\` must be a positive integer, but is ${top_k}`)
+            throw new Error(`\`top_k\` must be a positive integer, but is ${top_k}`);
         }
 
-        this.top_k = Math.max(top_k, min_tokens_to_keep)
-        this.filter_value = filter_value
+        this.top_k = Math.max(top_k, min_tokens_to_keep);
+        this.filter_value = filter_value;
     }
 }
