@@ -1,0 +1,4 @@
+  File "/Users/pauldufour/Repos/transformers.js/export_onnx_inherit.py", line 23
+    outputs = super().forward(past_values=inputs, forecast_context_len=1024))
+                                                                            ^
+SyntaxError: unmatched ')'
