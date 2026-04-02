@@ -29,6 +29,7 @@ import {
     AutoModelForImageToImage,
     AutoModelForDepthEstimation,
     AutoModelForImageFeatureExtraction,
+    AutoModelForTimeSeriesForecasting,
 } from '../models/auto/modeling_auto.js';
 
 import { TextClassificationPipeline } from './text-classification.js';
@@ -56,6 +57,7 @@ import { ImageToImagePipeline } from './image-to-image.js';
 import { DepthEstimationPipeline } from './depth-estimation.js';
 import { FeatureExtractionPipeline } from './feature-extraction.js';
 import { ImageFeatureExtractionPipeline } from './image-feature-extraction.js';
+import { TimeSeriesForecastingPipeline } from './time-series-forecasting.js';
 
 export const SUPPORTED_TASKS = Object.freeze({
     'text-classification': {
@@ -263,6 +265,15 @@ export const SUPPORTED_TASKS = Object.freeze({
         },
         type: 'image',
     },
+    'time-series-forecasting': {
+        pipeline: TimeSeriesForecastingPipeline,
+        model: AutoModelForTimeSeriesForecasting,
+        default: {
+            model: 'google/timesfm-2.5-200m-transformers',
+            dtype: 'fp32',
+        },
+        type: 'multimodal',
+    },
 });
 
 // TODO: Add types for TASK_ALIASES
@@ -304,6 +315,7 @@ export {
     DepthEstimationPipeline,
     FeatureExtractionPipeline,
     ImageFeatureExtractionPipeline,
+    TimeSeriesForecastingPipeline,
 };
 
 /**

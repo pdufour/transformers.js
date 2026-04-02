@@ -193,3 +193,4 @@ export * from './yolos/modeling_yolos.js';
 export * from './youtu/modeling_youtu.js';
 
 export { PreTrainedModel } from './modeling_utils.js';
+export * from './timesfm2_5/modeling_timesfm2_5.js';

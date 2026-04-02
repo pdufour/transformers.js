@@ -48,6 +48,7 @@ import {
     DepthEstimationPipeline,
     FeatureExtractionPipeline,
     ImageFeatureExtractionPipeline,
+    TimeSeriesForecastingPipeline,
 } from './pipelines/index.js';
 import { get_pipeline_files } from './utils/model_registry/get_pipeline_files.js';
 import { get_file_metadata } from './utils/model_registry/get_file_metadata.js';
@@ -79,6 +80,7 @@ import { get_file_metadata } from './utils/model_registry/get_file_metadata.js';
  *  - `"object-detection"`: will return a `ObjectDetectionPipeline`.
  *  - `"question-answering"`: will return a `QuestionAnsweringPipeline`.
  *  - `"summarization"`: will return a `SummarizationPipeline`.
+ *  - `"time-series-forecasting"`: will return a `TimeSeriesForecastingPipeline`.
  *  - `"text2text-generation"`: will return a `Text2TextGenerationPipeline`.
  *  - `"text-classification"` (alias "sentiment-analysis" available): will return a `TextClassificationPipeline`.
  *  - `"text-generation"`: will return a `TextGenerationPipeline`.

@@ -127,6 +127,7 @@ function getNormalizedConfig(config) {
         case 'lfm2':
         case 'lfm2_moe':
         case 'smollm3':
+        case 'timesfm2_5':
         case 'olmo':
         case 'olmo2':
         case 'olmo3':

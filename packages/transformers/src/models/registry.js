@@ -136,6 +136,7 @@ const MODEL_MAPPING_NAMES_DECODER_ONLY = new Map([
     ['afmoe', 'AfmoeModel'],
     ['lfm2', 'Lfm2Model'],
     ['lfm2_moe', 'Lfm2MoeModel'],
+    ['timesfm2_5', 'TimesFm2_5Model'],
     ['smollm3', 'SmolLM3Model'],
     ['exaone', 'ExaoneModel'],
     ['olmo', 'OlmoModel'],
@@ -516,6 +517,7 @@ const MODEL_FOR_IMAGE_MATTING_MAPPING_NAMES = new Map([['vitmatte', 'VitMatteFor
 const MODEL_FOR_TIME_SERIES_PREDICTION_MAPPING_NAMES = new Map([
     ['patchtst', 'PatchTSTForPrediction'],
     ['patchtsmixer', 'PatchTSMixerForPrediction'],
+    ['timesfm2_5', 'TimesFm2_5ModelForPrediction'],
 ]);
 
 const MODEL_FOR_IMAGE_TO_IMAGE_MAPPING_NAMES = new Map([['swin2sr', 'Swin2SRForImageSuperResolution']]);
@@ -671,6 +673,7 @@ export const MODEL_MAPPINGS = {
     MODEL_FOR_AUDIO_FRAME_CLASSIFICATION_MAPPING_NAMES,
     MODEL_FOR_DOCUMENT_QUESTION_ANSWERING_MAPPING_NAMES,
     MODEL_FOR_IMAGE_MATTING_MAPPING_NAMES,
+    MODEL_FOR_TIME_SERIES_PREDICTION_MAPPING_NAMES,
     MODEL_FOR_IMAGE_TO_IMAGE_MAPPING_NAMES,
     MODEL_FOR_DEPTH_ESTIMATION_MAPPING_NAMES,
     MODEL_FOR_NORMAL_ESTIMATION_MAPPING_NAMES,

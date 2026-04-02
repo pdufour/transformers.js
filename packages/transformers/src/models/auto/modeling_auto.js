@@ -382,3 +382,10 @@ export class AutoModelForImageTextToText extends PretrainedMixin {
 export class AutoModelForAudioTextToText extends PretrainedMixin {
     static MODEL_CLASS_MAPPINGS = [MODEL_MAPPINGS.MODEL_FOR_AUDIO_TEXT_TO_TEXT_MAPPING_NAMES];
 }
+
+/**
+ * Helper class which is used to instantiate pretrained time-series forecasting models with the `from_pretrained` function.
+ */
+export class AutoModelForTimeSeriesForecasting extends PretrainedMixin {
+    static MODEL_CLASS_MAPPINGS = [MODEL_MAPPINGS.MODEL_FOR_TIME_SERIES_PREDICTION_MAPPING_NAMES];
+}

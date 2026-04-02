@@ -102,6 +102,22 @@ export class CausalLMOutput extends ModelOutput {
 }
 
 /**
+ * Base class for forecasting model outputs.
+ */
+export class TimesFm2_5OutputForPrediction extends ModelOutput {
+    /**
+     * @param {Object} output The output of the model.
+     * @param {Tensor} output.mean_predictions The point forecast (mean).
+     * @param {Tensor} output.full_predictions The full forecast (point + quantiles).
+     */
+    constructor({ mean_predictions, full_predictions }) {
+        super();
+        this.mean_predictions = mean_predictions;
+        this.full_predictions = full_predictions;
+    }
+}
+
+/**
  * Base class for causal language model (or autoregressive) outputs.
  */
 export class CausalLMOutputWithPast extends ModelOutput {
