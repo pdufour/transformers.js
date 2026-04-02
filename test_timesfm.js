@@ -2,61 +2,60 @@ import { pipeline } from './packages/transformers/src/transformers.js';
 import path from 'path';
 
 /**
- * Enhanced test script for TimesFM 2.5 with Dynamic Context Lengths.
- * Testing multiple sequence lengths to verify dynamic ONNX axes.
+ * Comprehensive test suite for TimesFM 2.5 with Dynamic ONNX.
  */
-async function runTests() {
+async function runTestSuite() {
     try {
         const model_path = path.resolve('../timesfm-onnx-dynamic');
+        console.log(`\n🚀 Starting Test Suite using model: ${model_path}\n`);
         
-        console.log('----------------------------------------------------');
-        console.log(`Loading dynamic model from: ${model_path}`);
         const forecaster = await pipeline('time-series-forecasting', model_path);
-        console.log('Model loaded successfully.');
-        console.log('----------------------------------------------------');
+        const horizon = forecaster.model.config.horizon_length;
 
-        // Test Cases: [Batch Size, Sequence Length]
         const testCases = [
-            { batch: 1, seq: 256 },
-            { batch: 1, seq: 512 },
-            { batch: 1, seq: 1024 },
-            { batch: 2, seq: 128 },  // Dynamic batch size test
+            { name: "Single Series (Short)", batch: 1, seq: 128 },
+            { name: "Single Series (Medium)", batch: 1, seq: 512 },
+            { name: "Single Series (Long)", batch: 1, seq: 1024 },
+            { name: "Batch Processing (Batch=2)", batch: 2, seq: 256 },
+            { name: "Batch Processing (Batch=4)", batch: 4, seq: 64 },
+            { name: "Large Context (seq=2048)", batch: 1, seq: 2048 },
         ];
 
-        for (const { batch, seq } of testCases) {
-            console.log(`Testing: Batch=${batch}, Seq=${seq}`);
+        let passed = 0;
+        for (const tc of testCases) {
+            console.log(`[TEST] ${tc.name}: Input [${tc.batch}, ${tc.seq}]`);
             
-            // Create input (sine wave)
-            const inputData = Array.from({ length: batch }, () => 
-                Array.from({ length: seq }, (_, i) => Math.sin(i / 10))
+            const inputData = Array.from({ length: tc.batch }, () => 
+                Array.from({ length: tc.seq }, (_, i) => Math.sin(i / 10))
             );
 
-            const startTime = performance.now();
-            const output = await forecaster(inputData);
-            const endTime = performance.now();
+            try {
+                const start = performance.now();
+                const output = await forecaster(inputData);
+                const end = performance.now();
 
-            console.log(`  -> Duration: ${((endTime - startTime) / 1000).toFixed(3)}s`);
-            console.log(`  -> Mean Output Shape: [${output.mean_predictions.dims}]`);
-            
-            // Basic validation
-            if (output.mean_predictions.dims[0] !== batch) {
-                throw new Error(`Batch size mismatch! Expected ${batch}, got ${output.mean_predictions.dims[0]}`);
-            }
-            
-            const horizon = 128; // TimesFM 2.5 default horizon
-            if (output.mean_predictions.dims[1] !== horizon) {
-                throw new Error(`Horizon mismatch! Expected ${horizon}, got ${output.mean_predictions.dims[1]}`);
-            }
+                const mShape = output.mean_predictions.dims;
+                const fShape = output.full_predictions.dims;
 
-            console.log(`  -> First value: ${output.mean_predictions.data[0].toFixed(4)}`);
-            console.log('----------------------------------------------------');
+                if (mShape[0] !== tc.batch || mShape[1] !== horizon) {
+                    throw new Error(`Mean shape mismatch: expected [${tc.batch}, ${horizon}], got [${mShape}]`);
+                }
+                
+                console.log(`  ✅ Passed in ${((end - start) / 1000).toFixed(3)}s. Output shapes: Mean [${mShape}], Full [${fShape}]`);
+                passed++;
+            } catch (err) {
+                console.log(`  ❌ Failed: ${err.message}`);
+            }
         }
 
-        console.log('SUCCESS: All dynamic test cases passed!');
+        console.log(`\n📊 Results: ${passed}/${testCases.length} tests passed.\n`);
+        if (passed === testCases.length) {
+            console.log("🏁 COMPREHENSIVE SUCCESS: Model is fully dynamic and robust!");
+        }
 
     } catch (e) {
-        console.error('Test failed:', e);
+        console.error('Test suite failed to initialize:', e);
     }
 }
 
-runTests();
+runTestSuite();

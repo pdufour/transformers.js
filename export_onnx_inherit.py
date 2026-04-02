@@ -4,36 +4,39 @@ from transformers import TimesFm2_5ModelForPrediction, TimesFm2_5Config
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
-class TimesFmOnnxWrapper(torch.nn.Module):
+class TimesFmOnnxWrapper(TimesFm2_5ModelForPrediction):
+    """
+    Inherits from the library. We only override the forward pass to bridge 
+    the API and fix hardcoded indexing for dynamic context lengths.
+    """
     def __init__(self, model):
-        super().__init__()
-        self.model = model.model
-        self.config = model.config
-        self.output_projection_point = model.output_projection_point
-        self.output_projection_quantiles = model.output_projection_quantiles
-        self.tolerance = self.model.tolerance
+        super().__init__(model.config)
+        self.load_state_dict(model.state_dict())
+        self.tolerance = model.model.tolerance
 
     def forward(self, past_values):
-        # 1. VECTORIZED RUNNING STATS
+        # 1. VECTORIZED PREPROCESSING
+        # Replacing library's for-loop with cumsum for dynamic running stats.
+        b, seq_len = past_values.shape
         patch_len = self.config.patch_length
-        batch_size, seq_len = past_values.shape[0], past_values.shape[1]
         
-        patched_inputs = past_values.reshape(batch_size, -1, patch_len)
-        patch_sum = patched_inputs.sum(dim=-1)
-        patch_sq_sum = (patched_inputs ** 2).sum(dim=-1)
-
-        cum_sum = patch_sum.cumsum(dim=1)
-        cum_sq_sum = patch_sq_sum.cumsum(dim=1)
+        patched = past_values.reshape(b, -1, patch_len)
         
-        num_patches = patched_inputs.shape[1]
-        cum_count = torch.arange(1, num_patches + 1, device=past_values.device, dtype=past_values.dtype).unsqueeze(0) * patch_len
-
-        context_mu = cum_sum / cum_count
-        cum_var = (cum_sq_sum / cum_count) - (context_mu ** 2)
-        context_sigma = torch.sqrt(torch.clamp(cum_var, min=0.0))
+        p_sum = patched.sum(dim=-1)
+        p_sq_sum = (patched ** 2).sum(dim=-1)
         
-        # 2. TRANSFORMER LAYERS
-        normed = self.model._revin(patched_inputs, context_mu, context_sigma, reverse=False)
+        c_sum = p_sum.cumsum(dim=1)
+        c_sq_sum = p_sq_sum.cumsum(dim=1)
+        
+        num_p = patched.shape[1]
+        counts = torch.arange(1, num_p + 1, device=past_values.device, dtype=past_values.dtype).unsqueeze(0) * patch_len
+        
+        mu = c_sum / counts
+        var = (c_sq_sum / counts) - (mu ** 2)
+        sigma = torch.sqrt(torch.clamp(var, min=0.0))
+        
+        # 2. CORE TRANSFORMER
+        normed = (patched - mu.unsqueeze(-1)) / torch.clamp(sigma.unsqueeze(-1), min=self.tolerance)
         tok_in = torch.cat([normed, torch.ones_like(normed)], dim=-1)
         hidden = self.model.input_ff_layer(tok_in)
         
@@ -44,36 +47,44 @@ class TimesFmOnnxWrapper(torch.nn.Module):
             hidden = layer(hidden, position_embeddings=pos_emb, attention_mask=None, position_ids=pos_ids)
             
         # 3. DYNAMIC PATCH EXTRACTION
-        # Using [:, -1:] ensures it remains symbolic in legacy tracer
-        loc = context_mu[:, -1:]
-        scale = torch.clamp(context_sigma[:, -1:], min=self.tolerance)
+        # Using [:, -1:] instead of [-1] to keep the patch dimension for broadcasting
         hidden_last = hidden[:, -1:, :]
+        loc_last = mu[:, -1:].unsqueeze(-1)
+        sigma_last = sigma[:, -1:].unsqueeze(-1)
 
         # 4. PROJECTIONS
         num_q = len(self.config.quantiles) + 1
-        pf = self.output_projection_point(hidden_last).view(batch_size, self.config.horizon_length, num_q)
-        qs = self.output_projection_quantiles(hidden_last).view(batch_size, self.config.output_quantile_len, num_q)
+        h = self.config.horizon_length
+        
+        pf = self.output_projection_point(hidden_last).reshape(b, h, num_q)
+        qs = self.output_projection_quantiles(hidden_last).reshape(b, self.config.output_quantile_len, num_q)
 
-        # 5. COMBINATION
+        # Combine distribution
         full = pf.clone()
         if self.config.use_continuous_quantile_head:
             m_idx = self.config.decode_index
-            h = self.config.horizon_length
-            qs_slice = qs[:, :h, :]
-            full = torch.cat([pf[..., :1], qs_slice[:, :, 1:] - qs_slice[:, :, m_idx:m_idx+1] + pf[:, :, m_idx:m_idx+1]], dim=-1)
+            qs_s = qs[:, :h, :]
+            full = torch.cat([pf[..., :1], qs_s[:, :, 1:] - qs_s[:, :, m_idx:m_idx+1] + pf[:, :, m_idx:m_idx+1]], dim=-1)
 
-        # 6. DENORMALIZE
-        full = full * scale.unsqueeze(-1) + loc.unsqueeze(-1)
-        mean = full[:, :, self.config.decode_index]
+        # 5. DENORMALIZE
+        full_pred = full * sigma_last + loc_last
+        mean_pred = full_pred[:, :, self.config.decode_index]
 
-        return mean, full
+        return mean_pred, full_pred
 
 def main():
     model_id = "google/timesfm-2.5-200m-transformers"
     print(f"Loading {model_id}...")
-    config = TimesFm2_5Config.from_pretrained(model_id)
-    config._attn_implementation = "eager"
-    model = TimesFm2_5ModelForPrediction.from_pretrained(model_id, config=config).eval()
+    
+    # PATCH: The ONNX exporter (both legacy and Dynamo) currently cannot handle 
+    # the `enable_gqa=True` flag in SDPA. Transformers blindly passes this if 
+    # PyTorch >= 2.5 and q_heads != kv_heads. 
+    # We patch the check to always return False, which forces a standard SDPA 
+    # that exports perfectly while retaining all model logic.
+    import transformers.integrations.sdpa_attention
+    transformers.integrations.sdpa_attention.use_gqa_in_sdpa = lambda *args, **kwargs: False
+
+    model = TimesFm2_5ModelForPrediction.from_pretrained(model_id).eval()
     
     wrapper = TimesFmOnnxWrapper(model).eval()
     output_path = "../timesfm-onnx-dynamic/onnx/model.onnx"
@@ -93,7 +104,7 @@ def main():
         },
         opset_version=18,
         do_constant_folding=True,
-        dynamo=False # Legacy exporter is more stable for this complex combination
+        dynamo=False # Use legacy exporter to avoid SDPA SymbolicDim bugs
     )
     print("Export complete!")
 
